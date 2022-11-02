@@ -1,21 +1,40 @@
 use crossbeam::queue::SegQueue;
 use futures::channel::oneshot;
 use std::sync::Arc;
+use thiserror::Error;
 
 type SenderQueue<T> = Arc<SegQueue<oneshot::Sender<T>>>;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("receiver is failed.")]
+    ReceiverFailure,
+    #[error("sender is failed.")]
+    SenderFailure,
+}
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct In<T> {
     q: SenderQueue<T>,
 }
 impl<T: Clone> In<T> {
-    pub fn put(self, a: T) {
+    pub fn put(self, a: T) -> Result<()> {
         let q = self.q;
         while let Some(sender) = q.pop() {
-            sender.send(a.clone());
+            sender.send(a.clone()).map_err(|e| Error::ReceiverFailure)?;
         }
+        Ok(())
     }
 }
-pub type Out<T> = oneshot::Receiver<T>;
+pub struct Out<T> {
+    inner: oneshot::Receiver<T>,
+}
+impl<T> Out<T> {
+    pub async fn get(self) -> Result<T> {
+        let o = self.inner.await.map_err(|e| Error::SenderFailure)?;
+        Ok(o)
+    }
+}
 pub struct Node<T> {
     q: SenderQueue<T>,
 }
@@ -31,7 +50,7 @@ impl<T> Node<T> {
     pub fn output(&self) -> Out<T> {
         let (sender, receiver) = oneshot::channel();
         self.q.push(sender);
-        receiver
+        Out { inner: receiver }
     }
 }
 
@@ -49,8 +68,8 @@ mod tests {
             let out1 = n1.output();
             let in2 = n2.input();
             async move {
-                let x = out1.await.unwrap();
-                in2.put(x + 2);
+                let x = out1.get().await.unwrap();
+                in2.put(x + 2).unwrap();
             }
         });
         // λx. x*2
@@ -58,8 +77,8 @@ mod tests {
             let out1 = n1.output();
             let in3 = n3.input();
             async move {
-                let x = out1.await.unwrap();
-                in3.put(x * 2);
+                let x = out1.get().await.unwrap();
+                in3.put(x * 2).unwrap();
             }
         });
         // λxy. x*y
@@ -68,14 +87,14 @@ mod tests {
             let out3 = n3.output();
             let in4 = n4.input();
             async move {
-                let (x, y) = tokio::try_join!(out2, out3).unwrap();
-                in4.put(x * y);
+                let (x, y) = tokio::try_join!(out2.get(), out3.get()).unwrap();
+                in4.put(x * y).unwrap();
             }
         });
         let in1 = n1.input();
-        in1.put(1);
+        in1.put(1).unwrap();
         let out4 = n4.output();
-        let ans = out4.await.unwrap();
+        let ans = out4.get().await.unwrap();
         assert_eq!(ans, 6);
     }
 }
