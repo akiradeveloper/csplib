@@ -12,7 +12,7 @@ pub enum Error {
     #[error("sender is failed.")]
     SenderFailure,
 }
-pub type Result<T> = std::result::Result<T, Error>;
+type Result<T> = std::result::Result<T, Error>;
 
 pub struct In<T> {
     q: SenderQueue<T>,
