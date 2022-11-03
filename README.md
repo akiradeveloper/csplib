@@ -37,6 +37,8 @@ tokio::spawn({
     let in3 = n3.input();
     async move {
         let x = out1.get().await.unwrap();
+        // Emulating expensive I/O
+        tokio::time::sleep(std::time::Duration::from_secs(5)).await;
         in3.put(x * 2).unwrap();
     }
 });
