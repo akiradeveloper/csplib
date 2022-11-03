@@ -77,6 +77,8 @@ mod tests {
             let out1 = n1.output();
             let in3 = n3.input();
             async move {
+                // Emulating expensive I/O
+                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
                 let x = out1.get().await.unwrap();
                 in3.put(x * 2).unwrap();
             }
