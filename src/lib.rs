@@ -36,10 +36,10 @@ impl<T> Out<T> {
     }
 }
 #[derive(Clone)]
-pub struct Node<T> {
+pub struct Channel<T> {
     q: SenderQueue<T>,
 }
-impl<T> Node<T> {
+impl<T> Channel<T> {
     pub fn new() -> Self {
         Self {
             q: Arc::new(SegQueue::new()),
@@ -60,24 +60,24 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn test_pingpong() {
-        let n = Node::new();
+        let ch = Channel::new();
         tokio::spawn({
-            let n = n.clone();
+            let ch = ch.clone();
             async move {
-                let r = n.output();
+                let r = ch.output();
                 let x = r.get().await.unwrap();
                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                 let s = format!("{}pong", x);
-                let w = n.input();
+                let w = ch.input();
                 w.put(s).unwrap();
             }
         });
         let y = tokio::spawn({
-            let n = n.clone();
+            let ch = ch.clone();
             async move {
                 let x = "ping".to_owned();
-                n.input().put(x).unwrap();
-                let y = n.output().get().await.unwrap();
+                ch.input().put(x).unwrap();
+                let y = ch.output().get().await.unwrap();
                 y
             }
         })
@@ -87,14 +87,14 @@ mod tests {
     }
     #[tokio::test]
     async fn test_calc_grpah() {
-        let n1 = Node::new();
-        let n2 = Node::new();
-        let n3 = Node::new();
-        let n4 = Node::new();
+        let ch1 = Channel::new();
+        let ch2 = Channel::new();
+        let ch3 = Channel::new();
+        let ch4 = Channel::new();
         // λx. x+2
         tokio::spawn({
-            let out1 = n1.output();
-            let in2 = n2.input();
+            let out1 = ch1.output();
+            let in2 = ch2.input();
             async move {
                 let x = out1.get().await.unwrap();
                 in2.put(x + 2).unwrap();
@@ -102,8 +102,8 @@ mod tests {
         });
         // λx. x*2
         tokio::spawn({
-            let out1 = n1.output();
-            let in3 = n3.input();
+            let out1 = ch1.output();
+            let in3 = ch3.input();
             async move {
                 // Emulating expensive I/O
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;
@@ -113,17 +113,17 @@ mod tests {
         });
         // λxy. x*y
         tokio::spawn({
-            let out2 = n2.output();
-            let out3 = n3.output();
-            let in4 = n4.input();
+            let out2 = ch2.output();
+            let out3 = ch3.output();
+            let in4 = ch4.input();
             async move {
                 let (x, y) = tokio::try_join!(out2.get(), out3.get()).unwrap();
                 in4.put(x * y).unwrap();
             }
         });
-        let in1 = n1.input();
+        let in1 = ch1.input();
         in1.put(1).unwrap();
-        let out4 = n4.output();
+        let out4 = ch4.output();
         let ans = out4.get().await.unwrap();
         assert_eq!(ans, 6);
     }
