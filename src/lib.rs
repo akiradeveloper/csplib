@@ -35,6 +35,7 @@ impl<T> Out<T> {
         Ok(o)
     }
 }
+#[derive(Clone)]
 pub struct Node<T> {
     q: SenderQueue<T>,
 }
@@ -58,7 +59,34 @@ impl<T> Node<T> {
 mod tests {
     use super::*;
     #[tokio::test]
-    async fn test() {
+    async fn test_pingpong() {
+        let n = Node::new();
+        tokio::spawn({
+            let n = n.clone();
+            async move {
+                let r = n.output();
+                let x = r.get().await.unwrap();
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                let s = format!("{}pong", x);
+                let w = n.input();
+                w.put(s).unwrap();
+            }
+        });
+        let y = tokio::spawn({
+            let n = n.clone();
+            async move {
+                let x = "ping".to_owned();
+                n.input().put(x).unwrap();
+                let y = n.output().get().await.unwrap();
+                y
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(y, "pingpong")
+    }
+    #[tokio::test]
+    async fn test_calc_grpah() {
         let n1 = Node::new();
         let n2 = Node::new();
         let n3 = Node::new();
