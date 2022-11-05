@@ -54,13 +54,13 @@ assert_eq!(y, "pingpong")
 ```mermaid
 flowchart LR
   Main -->|1| ch1
-  ch1 --> P1(x+2)
-  ch1 --> P2(x*2)
+  ch1 -->|1| P1(x+2)
+  ch1 -->|1| P2(x*2)
   P1 -->|3| ch2
   P2 -->|2| ch3
-  ch2 --> P4(x*y)
-  ch3 --> P4
-  P4 --> ch4
+  ch2 -->|3| P4(x*y)
+  ch3 -->|2| P4
+  P4 -->|6| ch4
   ch4 -->|6| Main
 ```
 
