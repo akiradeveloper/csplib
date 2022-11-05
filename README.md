@@ -1,4 +1,4 @@
-# Circuit
+# CSPLib
 
 Communicating Sequential Processes (CSP) is a way of writing a concurrent application using message passing through channels. It is practically used in Go's channel for communication between threads. 
 
