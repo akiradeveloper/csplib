@@ -1,5 +1,8 @@
 # CSPLib
 
+[![Crates.io](https://img.shields.io/crates/v/csplib.svg)](https://crates.io/crates/csplib)
+[![documentation](https://docs.rs/csplib/badge.svg)](https://docs.rs/csplib)
+
 Communicating Sequential Processes (CSP) is a way of writing a concurrent application using message passing through channels. It is practically used in Go's channel for communication between threads. 
 
 ![1_sMCQYHFh16sEPzNs1Dq1GA](https://user-images.githubusercontent.com/785824/200107637-8ba8cb54-2ff0-473a-89b9-50ec8f7ec6fb.png)
