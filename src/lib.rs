@@ -8,9 +8,9 @@ type SenderQueue<T> = Arc<SegQueue<oneshot::Sender<T>>>;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("receiver is failed.")]
-    ReceiverFailure,
+    ReceiverFailed,
     #[error("sender is failed.")]
-    SenderFailure,
+    SenderFailed,
 }
 type Result<T> = std::result::Result<T, Error>;
 
@@ -21,7 +21,7 @@ impl<T: Clone> Writer<T> {
     pub fn put(self, a: T) -> Result<()> {
         let q = self.q;
         while let Some(sender) = q.pop() {
-            sender.send(a.clone()).map_err(|e| Error::ReceiverFailure)?;
+            sender.send(a.clone()).map_err(|_| Error::ReceiverFailed)?;
         }
         Ok(())
     }
@@ -31,7 +31,7 @@ pub struct Reader<T> {
 }
 impl<T> Reader<T> {
     pub async fn get(self) -> Result<T> {
-        let o = self.inner.await.map_err(|e| Error::SenderFailure)?;
+        let o = self.inner.await.map_err(|_| Error::SenderFailed)?;
         Ok(o)
     }
 }
