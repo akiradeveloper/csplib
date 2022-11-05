@@ -21,8 +21,8 @@ flowchart LR
 is equivalent to
 
 ```rust
-let (ch1, w1) = channel();
-let (ch2, w2) = channel();
+let (w1, ch1) = channel();
+let (w2, ch2) = channel();
 tokio::spawn({
     let r1 = ch1.reader();
     async move {
@@ -67,10 +67,10 @@ flowchart LR
 is equivalent to
 
 ```rust
-let (ch1, w1) = channel();
-let (ch2, w2) = channel();
-let (ch3, w3) = channel();
-let (ch4, w4) = channel();
+let (w1, ch1) = channel();
+let (w2, ch2) = channel();
+let (w3, ch3) = channel();
+let (w4, ch4) = channel();
 // λx. x+2
 tokio::spawn({
     let r1 = ch1.reader();
