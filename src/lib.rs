@@ -66,7 +66,7 @@ mod tests {
             let w2 = ch2.writer();
             async move {
                 let x = r1.get().await.unwrap();
-                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                tokio::task::yield_now().await;
                 let s = format!("{}pong", x);
                 w2.put(s).unwrap();
             }
@@ -77,6 +77,7 @@ mod tests {
             async move {
                 let x = "ping".to_owned();
                 w1.put(x).unwrap();
+                tokio::task::yield_now().await;
                 let y = r2.get().await.unwrap();
                 y
             }
