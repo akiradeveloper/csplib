@@ -39,12 +39,12 @@ pub struct Channel<T> {
     q: SenderQueue<T>,
 }
 impl<T> Channel<T> {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             q: Arc::new(SegQueue::new()),
         }
     }
-    pub fn writer(&self) -> Writer<T> {
+    fn writer(&self) -> Writer<T> {
         Writer { q: self.q.clone() }
     }
     pub fn reader(&self) -> Reader<T> {
@@ -54,16 +54,21 @@ impl<T> Channel<T> {
     }
 }
 
+pub fn channel<T>() -> (Channel<T>, Writer<T>) {
+    let ch = Channel::new();
+    let w = ch.writer();
+    (ch, w)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[tokio::test]
     async fn test_pingpong() {
-        let ch1 = Channel::new();
-        let ch2 = Channel::new();
+        let (ch1, w1) = channel();
+        let (ch2, w2) = channel();
         tokio::spawn({
             let r1 = ch1.reader();
-            let w2 = ch2.writer();
             async move {
                 let x = r1.get().await.unwrap();
                 tokio::task::yield_now().await;
@@ -72,7 +77,6 @@ mod tests {
             }
         });
         let y = tokio::spawn({
-            let w1 = ch1.writer();
             let r2 = ch2.reader();
             async move {
                 let x = "ping".to_owned();
@@ -88,14 +92,13 @@ mod tests {
     }
     #[tokio::test]
     async fn test_computational_graph() {
-        let ch1 = Channel::new();
-        let ch2 = Channel::new();
-        let ch3 = Channel::new();
-        let ch4 = Channel::new();
+        let (ch1, w1) = channel();
+        let (ch2, w2) = channel();
+        let (ch3, w3) = channel();
+        let (ch4, w4) = channel();
         // λx. x+2
         tokio::spawn({
             let r1 = ch1.reader();
-            let w2 = ch2.writer();
             async move {
                 let x = r1.get().await.unwrap();
                 w2.put(x + 2).unwrap();
@@ -104,7 +107,6 @@ mod tests {
         // λx. x*2
         tokio::spawn({
             let r1 = ch1.reader();
-            let w3 = ch3.writer();
             async move {
                 // Emulating expensive I/O
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;
@@ -116,13 +118,11 @@ mod tests {
         tokio::spawn({
             let r2 = ch2.reader();
             let r3 = ch3.reader();
-            let w4 = ch4.writer();
             async move {
                 let (x, y) = tokio::try_join!(r2.get(), r3.get()).unwrap();
                 w4.put(x * y).unwrap();
             }
         });
-        let w1 = ch1.writer();
         w1.put(1).unwrap();
         let r4 = ch4.reader();
         let ans = r4.get().await.unwrap();
