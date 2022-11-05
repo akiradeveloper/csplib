@@ -14,10 +14,10 @@ pub enum Error {
 }
 type Result<T> = std::result::Result<T, Error>;
 
-pub struct In<T> {
+pub struct Writer<T> {
     q: SenderQueue<T>,
 }
-impl<T: Clone> In<T> {
+impl<T: Clone> Writer<T> {
     pub fn put(self, a: T) -> Result<()> {
         let q = self.q;
         while let Some(sender) = q.pop() {
@@ -26,10 +26,10 @@ impl<T: Clone> In<T> {
         Ok(())
     }
 }
-pub struct Out<T> {
+pub struct Reader<T> {
     inner: oneshot::Receiver<T>,
 }
-impl<T> Out<T> {
+impl<T> Reader<T> {
     pub async fn get(self) -> Result<T> {
         let o = self.inner.await.map_err(|e| Error::SenderFailure)?;
         Ok(o)
@@ -44,13 +44,13 @@ impl<T> Channel<T> {
             q: Arc::new(SegQueue::new()),
         }
     }
-    pub fn input(&self) -> In<T> {
-        In { q: self.q.clone() }
+    pub fn writer(&self) -> Writer<T> {
+        Writer { q: self.q.clone() }
     }
-    pub fn output(&self) -> Out<T> {
+    pub fn reader(&self) -> Reader<T> {
         let (sender, receiver) = oneshot::channel();
         self.q.push(sender);
-        Out { inner: receiver }
+        Reader { inner: receiver }
     }
 }
 
@@ -62,22 +62,22 @@ mod tests {
         let ch1 = Channel::new();
         let ch2 = Channel::new();
         tokio::spawn({
-            let out1 = ch1.output();
-            let in2 = ch2.input();
+            let r1 = ch1.reader();
+            let w2 = ch2.writer();
             async move {
-                let x = out1.get().await.unwrap();
+                let x = r1.get().await.unwrap();
                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                 let s = format!("{}pong", x);
-                in2.put(s).unwrap();
+                w2.put(s).unwrap();
             }
         });
         let y = tokio::spawn({
-            let in1 = ch1.input();
-            let out2 = ch2.output();
+            let w1 = ch1.writer();
+            let r2 = ch2.reader();
             async move {
                 let x = "ping".to_owned();
-                in1.put(x).unwrap();
-                let y = out2.get().await.unwrap();
+                w1.put(x).unwrap();
+                let y = r2.get().await.unwrap();
                 y
             }
         })
@@ -93,38 +93,38 @@ mod tests {
         let ch4 = Channel::new();
         // λx. x+2
         tokio::spawn({
-            let out1 = ch1.output();
-            let in2 = ch2.input();
+            let r1 = ch1.reader();
+            let w2 = ch2.writer();
             async move {
-                let x = out1.get().await.unwrap();
-                in2.put(x + 2).unwrap();
+                let x = r1.get().await.unwrap();
+                w2.put(x + 2).unwrap();
             }
         });
         // λx. x*2
         tokio::spawn({
-            let out1 = ch1.output();
-            let in3 = ch3.input();
+            let r1 = ch1.reader();
+            let w3 = ch3.writer();
             async move {
                 // Emulating expensive I/O
                 tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-                let x = out1.get().await.unwrap();
-                in3.put(x * 2).unwrap();
+                let x = r1.get().await.unwrap();
+                w3.put(x * 2).unwrap();
             }
         });
         // λxy. x*y
         tokio::spawn({
-            let out2 = ch2.output();
-            let out3 = ch3.output();
-            let in4 = ch4.input();
+            let r2 = ch2.reader();
+            let r3 = ch3.reader();
+            let w4 = ch4.writer();
             async move {
-                let (x, y) = tokio::try_join!(out2.get(), out3.get()).unwrap();
-                in4.put(x * y).unwrap();
+                let (x, y) = tokio::try_join!(r2.get(), r3.get()).unwrap();
+                w4.put(x * y).unwrap();
             }
         });
-        let in1 = ch1.input();
-        in1.put(1).unwrap();
-        let out4 = ch4.output();
-        let ans = out4.get().await.unwrap();
+        let w1 = ch1.writer();
+        w1.put(1).unwrap();
+        let r4 = ch4.reader();
+        let ans = r4.get().await.unwrap();
         assert_eq!(ans, 6);
     }
 }
