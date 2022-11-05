@@ -4,7 +4,7 @@ Communicating Sequential Processes (CSP) is a way of writing a concurrent applic
 
 ![1_sMCQYHFh16sEPzNs1Dq1GA](https://user-images.githubusercontent.com/785824/200107637-8ba8cb54-2ff0-473a-89b9-50ec8f7ec6fb.png)
 
-In the textbook CSP as in the figure above, the writer blocks until reader consume the passing value so as to hold only one value in the channel. However, any reader doesn't exist when writer puts a value in the channel isn't practiacally a case. Also, allowing only one reader limits the use case. So alternatively in this library, writer is never blocked by the reader and allows multiple readers based on the assumption reader is ready when the writer starts putting a value on the channel.
+In the textbook CSP as in the figure above, the writer blocks until reader consumes the passing value so as to hold only one value in the channel. However, any reader doesn't exist when writer puts a value in the channel isn't practiacally a case. Also, allowing only one reader limits the use case. So alternatively in this library, writer is never blocked by the reader and allows multiple readers based on the assumption reader is ready when the writer starts putting a value on the channel.
 
 ## Examples
 
@@ -54,7 +54,7 @@ assert_eq!(y, "pingpong")
 ### Example 2
 
 ```mermaid
-flowchart TD
+flowchart LR
   Main -->|1| ch1
   ch1 --> P1(x+2)
   ch1 --> P2(x*2)
