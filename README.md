@@ -1,6 +1,10 @@
 # Circuit
 
-Implement concurrent application like circuit.
+Communicating Sequential Processes (CSP) is a way of writing a concurrent application using message passing through channels. It is practically used in Go's channel for communication between threads. 
+
+![1_sMCQYHFh16sEPzNs1Dq1GA](https://user-images.githubusercontent.com/785824/200107637-8ba8cb54-2ff0-473a-89b9-50ec8f7ec6fb.png)
+
+In the textbook CSP as in the figure above, the writer blocks until reader consume the passing value so as to hold only one value in the channel. However, any reader doesn't exist when writer puts a value in the channel isn't practiacally a case. Also, allowing only one reader limits the use case. So alternatively in this library, writer is never blocked by the reader and allows multiple readers based on the assumption reader is ready when the writer starts putting a value on the channel.
 
 ## Examples
 
