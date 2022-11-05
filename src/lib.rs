@@ -35,7 +35,6 @@ impl<T> Out<T> {
         Ok(o)
     }
 }
-#[derive(Clone)]
 pub struct Channel<T> {
     q: SenderQueue<T>,
 }
@@ -60,24 +59,25 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn test_pingpong() {
-        let ch = Channel::new();
+        let ch1 = Channel::new();
+        let ch2 = Channel::new();
         tokio::spawn({
-            let ch = ch.clone();
+            let out1 = ch1.output();
+            let in2 = ch2.input();
             async move {
-                let r = ch.output();
-                let x = r.get().await.unwrap();
+                let x = out1.get().await.unwrap();
                 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
                 let s = format!("{}pong", x);
-                let w = ch.input();
-                w.put(s).unwrap();
+                in2.put(s).unwrap();
             }
         });
         let y = tokio::spawn({
-            let ch = ch.clone();
+            let in1 = ch1.input();
+            let out2 = ch2.output();
             async move {
                 let x = "ping".to_owned();
-                ch.input().put(x).unwrap();
-                let y = ch.output().get().await.unwrap();
+                in1.put(x).unwrap();
+                let y = out2.get().await.unwrap();
                 y
             }
         })
@@ -86,7 +86,7 @@ mod tests {
         assert_eq!(y, "pingpong")
     }
     #[tokio::test]
-    async fn test_calc_grpah() {
+    async fn test_computational_graph() {
         let ch1 = Channel::new();
         let ch2 = Channel::new();
         let ch3 = Channel::new();
