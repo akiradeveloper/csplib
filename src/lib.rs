@@ -7,6 +7,8 @@ type SenderQueue<T> = Arc<SegQueue<oneshot::Sender<T>>>;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("no receiver is ready.")]
+    ReceiverNotReady,
     #[error("receiver is failed.")]
     ReceiverFailed,
     #[error("sender is failed.")]
@@ -20,6 +22,9 @@ pub struct Writer<T> {
 impl<T: Clone> Writer<T> {
     pub fn put(self, a: T) -> Result<()> {
         let q = self.q;
+        if q.is_empty() {
+            return Err(Error::ReceiverNotReady);
+        }
         while let Some(sender) = q.pop() {
             sender.send(a.clone()).map_err(|_| Error::ReceiverFailed)?;
         }
