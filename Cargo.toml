@@ -1,7 +1,14 @@
 [package]
 name = "csplib"
 version = "0.1.0"
+authors = ["Akira Hayakawa <ruby.wktk@gmail.com>"]
 edition = "2021"
+license = "MIT"
+description = "Implementation of CSP for concurrent programming"
+repository = "https://github.com/akiradeveloper/csplib"
+readme = "README.md"
+categories = ["concurrency"]
+keywords = ["async", "channel", "spmc"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
