@@ -22,50 +22,7 @@ The building block of the deep learning is computational graph and it is just an
 ![54-1](https://user-images.githubusercontent.com/785824/200149209-cf05253a-59cb-4be9-9fd1-5e7fc7fd8a42.jpeg)
 
 
-## Examples
-
-### Example #1
-
-```mermaid
-flowchart LR
-  P1 -->|ping| ch1
-  ch1 -->|ping| P2
-  P2 -->|pingpong| ch2
-  ch2 -->|pingpong| P1
-```
-
-is equivalent to
-
-```rust
-let (w1, ch1) = channel();
-let (w2, ch2) = channel();
-tokio::spawn({
-    let r1 = ch1.reader();
-    async move {
-        let x = r1.get().await.unwrap();
-        tokio::task::yield_now().await;
-        let s = format!("{}pong", x);
-        w2.put(s).unwrap();
-    }
-});
-let y = tokio::spawn({
-    let r2 = ch2.reader();
-    async move {
-        let x = "ping".to_owned();
-        w1.put(x).unwrap();
-        tokio::task::yield_now().await;
-        let y = r2.get().await.unwrap();
-        y
-    }
-})
-.await
-.unwrap();
-assert_eq!(y, "pingpong")
-```
-
-----
-
-### Example #2
+## Example
 
 ```mermaid
 flowchart LR
