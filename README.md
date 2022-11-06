@@ -3,17 +3,28 @@
 [![Crates.io](https://img.shields.io/crates/v/csplib.svg)](https://crates.io/crates/csplib)
 [![documentation](https://docs.rs/csplib/badge.svg)](https://docs.rs/csplib)
 
+## Communicating Sequential Processes (CSP)
+
+### Background
+
 Communicating Sequential Processes (CSP) is a way of writing a concurrent application using message passing through channels. It is practically used in Go's channel for communication between threads. 
 
 ![1_sMCQYHFh16sEPzNs1Dq1GA](https://user-images.githubusercontent.com/785824/200107637-8ba8cb54-2ff0-473a-89b9-50ec8f7ec6fb.png)
 
 In the textbook CSP as in the figure above, the writer should block until reader consumes the passing value so as to hold only one value in the channel, which is I guess a good property for mathematical analysis. However, any reader doesn't exist when writer puts a value in the channel isn't practiacally a case. Also, allowing only one reader limits the use case. 
 
-So alternatively in this library, writer is never blocked by the reader and allows multiple readers (SPMC) based on the assumption reader is ready when the writer starts putting a value on the channel.
+**Library Design:** So alternatively in this library, writer is never blocked by the reader and allows multiple readers (SPMC) based on the assumption reader is ready when the writer starts putting a value on the channel.
+
+### Computational Graph
+
+The building block of the deep learning is computational graph and it is just an instance of CSP.
+
+![54-1](https://user-images.githubusercontent.com/785824/200149209-cf05253a-59cb-4be9-9fd1-5e7fc7fd8a42.jpeg)
+
 
 ## Examples
 
-### Example 1
+### Example #1
 
 ```mermaid
 flowchart LR
@@ -54,7 +65,7 @@ assert_eq!(y, "pingpong")
 
 ----
 
-### Example 2
+### Example #2
 
 ```mermaid
 flowchart LR
