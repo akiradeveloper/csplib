@@ -15,13 +15,13 @@ Communicating Sequential Processes (CSP) is a way of writing a concurrent applic
 
 The building block of the deep learning is computational graph and it can be implemented as CSP.
 
-![54-1](https://user-images.githubusercontent.com/785824/200149209-cf05253a-59cb-4be9-9fd1-5e7fc7fd8a42.jpeg)
+![54-1](https://user-images.githubusercontent.com/785824/200200343-1f7bf205-a259-4761-8697-6292026def19.jpeg)
 
 ### Logical Circuit
 
 Logical circuit can be implemented as CSP as well.
 
-![Logic-Circuit-in-CircuiTikZ-IEEE-style](https://user-images.githubusercontent.com/785824/200200238-ccfceeb4-a509-4774-a558-b3cda41e664d.jpeg)
+![Logic-Circuit-in-CircuiTikZ-IEEE-style](https://user-images.githubusercontent.com/785824/200200370-037c5b46-08a1-44ed-88e6-9612bbd2c57e.jpeg)
 
 ## Library Design
 
