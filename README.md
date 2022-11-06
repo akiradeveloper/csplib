@@ -11,16 +11,17 @@ Communicating Sequential Processes (CSP) is a way of writing a concurrent applic
 
 ![1_sMCQYHFh16sEPzNs1Dq1GA](https://user-images.githubusercontent.com/785824/200107637-8ba8cb54-2ff0-473a-89b9-50ec8f7ec6fb.png)
 
-In the textbook CSP as in the figure above, the writer should block until reader consumes the passing value so as to hold only one value in the channel, which is I guess a good property for mathematical analysis. However, any reader doesn't exist when writer puts a value in the channel isn't practiacally a case. Also, allowing only one reader limits the use case. 
-
-**(Library Design)** So alternatively in this library, writer is never blocked by the reader and allows multiple readers (SPMC) based on the assumption reader is ready when the writer starts putting a value on the channel.
-
 ### Computational Graph
 
-The building block of the deep learning is computational graph and it is just an instance of CSP.
+The building block of the deep learning is computational graph and it can be implemented as CSP.
 
 ![54-1](https://user-images.githubusercontent.com/785824/200149209-cf05253a-59cb-4be9-9fd1-5e7fc7fd8a42.jpeg)
 
+## Library Design
+
+In the textbook CSP, the writer should block until reader consumes the passing value so as to hold only one value in the channel, which I guess is a good property for mathematical analysis. However, any reader doesn't exist when writer puts a value in the channel isn't practiacally a case. Also, allowing only one reader limits the use case. 
+
+So alternatively in this library, writer is never blocked by the reader and allows multiple readers (SPMC) based on the assumption reader is ready when the writer  a value on the channel. If any reader doesn't exist, the writer fails.
 
 ## Example
 
