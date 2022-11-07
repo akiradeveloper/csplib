@@ -58,10 +58,10 @@ fn generate_struct(st: Struct) -> String {
     for field in st.fields {
         match field {
             Interface::Channel(Var { name, typ }) => {
-                fields.push(format!("pub {name}_r: Channel<{typ}>"));
+                fields.push(format!("pub {name}: Channel<{typ}>"));
             }
             Interface::Writer(Var { name, typ }) => {
-                fields.push(format!("pub {name}_w: Writer<{typ}>"));
+                fields.push(format!("pub {name}: Writer<{typ}>"));
             }
         }
     }
@@ -79,11 +79,11 @@ fn generate_initializer(st: Struct) -> String {
     let mut fields = vec![];
     for field in st.fields {
         match field {
-            Interface::Channel(Var { name, typ }) => {
-                fields.push(format!("{name}_r"));
+            Interface::Writer(Var { name, .. }) => {
+                fields.push(format!("{name}: {name}_w"));
             }
-            Interface::Writer(Var { name, typ }) => {
-                fields.push(format!("{name}_w"));
+            Interface::Channel(Var { name, .. }) => {
+                fields.push(format!("{name}: {name}_r"));
             }
         }
     }

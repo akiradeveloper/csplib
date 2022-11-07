@@ -56,8 +56,8 @@ struct P1 {
 }
 // λx. x+2
 async fn run_p1(inner: P1Inner) -> Result<()> {
-    let x = inner.a_r.reader().get().await?;
-    inner.b_w.put(x + 2)?;
+    let x = inner.a.reader().get().await?;
+    inner.b.put(x + 2)?;
     Ok(())
 }
 #[csplib::process]
@@ -69,10 +69,10 @@ struct P2 {
 }
 // λx. x*2
 async fn run_p2(inner: P2Inner) -> Result<()> {
-    let x = inner.a_r.reader().get().await?;
+    let x = inner.a.reader().get().await?;
     // Emulating expensive I/O
     tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-    inner.b_w.put(x * 2)?;
+    inner.b.put(x * 2)?;
     Ok(())
 }
 #[csplib::process]
@@ -86,9 +86,9 @@ struct P3 {
 }
 // λxy. x*y
 async fn run_p3(inner: P3Inner) -> Result<()> {
-    let x = inner.a_r.reader().get().await?;
-    let y = inner.b_r.reader().get().await?;
-    inner.c_w.put(x * y)?;
+    let x = inner.a.reader().get().await?;
+    let y = inner.b.reader().get().await?;
+    inner.c.put(x * y)?;
     Ok(())
 }
 
@@ -101,15 +101,15 @@ tokio::spawn(run_p1(p1_inner));
 tokio::spawn(run_p2(p2_inner));
 tokio::spawn(run_p3(p3_inner));
 
-tokio::spawn(connect(main_r.reader(), p1.a_w));
-tokio::spawn(connect(main_r.reader(), p2.a_w));
-tokio::spawn(connect(p1.b_r.reader(), p3.a_w));
-tokio::spawn(connect(p2.b_r.reader(), p3.b_w));
+tokio::spawn(connect(main_r.reader(), p1.a));
+tokio::spawn(connect(main_r.reader(), p2.a));
+tokio::spawn(connect(p1.b.reader(), p3.a));
+tokio::spawn(connect(p2.b.reader(), p3.b));
 
 // Wait for all spawnings.
 tokio::time::sleep(std::time::Duration::from_secs(1)).await;
 
 main_w.put(1).unwrap();
-let ans = p3.c_r.reader().get().await.unwrap();
+let ans = p3.c.reader().get().await.unwrap();
 assert_eq!(ans, 6);
 ```
