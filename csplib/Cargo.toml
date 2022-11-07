@@ -1,6 +1,6 @@
 [package]
 name = "csplib"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Akira Hayakawa <ruby.wktk@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -16,7 +16,7 @@ keywords = ["async", "channel", "spmc"]
 futures = "0.3"
 crossbeam = "0.8"
 thiserror = "1"
-csplib-macros = { version = "0.1", path = "../csplib-macros" }
+csplib-macros = { version = "0.1.2", path = "../csplib-macros" }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
