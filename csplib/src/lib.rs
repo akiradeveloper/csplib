@@ -70,3 +70,5 @@ pub fn channel<T>() -> (Writer<T>, Channel<T>) {
     let w = ch.writer();
     (w, ch)
 }
+
+pub use csplib_macros::process;
