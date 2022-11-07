@@ -61,6 +61,9 @@ async fn computational_graph() {
     tokio::spawn(connect(p1.b_r.reader(), p3.a_w));
     tokio::spawn(connect(p2.b_r.reader(), p3.b_w));
 
+    // Wait for all spawnings.
+    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+
     main_w.put(1).unwrap();
     let ans = p3.c_r.reader().get().await.unwrap();
     assert_eq!(ans, 6);

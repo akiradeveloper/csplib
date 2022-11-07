@@ -24,6 +24,7 @@ async fn circuit() {
     tokio::spawn(run_and(and_inner1));
     let (and2, and_inner2) = And::new();
     tokio::spawn(run_and(and_inner2));
+
     tokio::spawn(connect(and1.c_r.reader(), and2.a_w));
 
     // Wait for all spawnings.
