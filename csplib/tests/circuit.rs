@@ -9,27 +9,22 @@ struct And {
     #[output]
     c: bool,
 }
-impl AndInner {
-    async fn run(self) -> Result<()> {
-        let a = self.a_r.reader();
-        let b = self.b_r.reader();
-        let (a, b) = tokio::try_join!(a.get(), b.get())?;
-        let c = a & b;
-        self.c_w.put(c)?;
-        Ok(())
-    }
+async fn run_and(inner: AndInner) -> Result<()> {
+    let a = inner.a_r.reader();
+    let b = inner.b_r.reader();
+    let (a, b) = tokio::try_join!(a.get(), b.get())?;
+    let c = a & b;
+    inner.c_w.put(c)?;
+    Ok(())
 }
 
 #[tokio::test]
 async fn circuit() {
     let (and1, and_inner1) = And::new();
-    tokio::spawn(and_inner1.run());
+    tokio::spawn(run_and(and_inner1));
     let (and2, and_inner2) = And::new();
-    tokio::spawn(and_inner2.run());
-    tokio::spawn({
-        let r = and1.c_r.reader();
-        connect(r, and2.a_w)
-    });
+    tokio::spawn(run_and(and_inner2));
+    tokio::spawn(connect(and1.c_r.reader(), and2.a_w));
 
     // Wait for all spawnings.
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
