@@ -3,6 +3,8 @@
 [![Crates.io](https://img.shields.io/crates/v/csplib.svg)](https://crates.io/crates/csplib)
 [![documentation](https://docs.rs/csplib/badge.svg)](https://docs.rs/csplib)
 
+<img src="https://user-images.githubusercontent.com/785824/200507760-64f77306-3352-4137-9685-62ed999fe439.svg" width=250 />
+
 ## Communicating Sequential Processes (CSP)
 
 ### Background
